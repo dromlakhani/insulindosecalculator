@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insulin Dose Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    input[type="number"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 200px;
+    }
+    select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 220px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border-radius: 4px;
+      border-left: 4px solid #4CAF50;
+    }
+    .formula-display {
+      font-family: monospace;
+      background-color: #f8f9fa;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .nav-tab {
+      padding: 10px 20px;
+      background-color: #f8f9fa;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .nav-tab.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Insulin Dose Calculator</h1>
+    <h2>Dr. Om J Lakhani</h2>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('type2', this)">Type 2 Diabetes (OPD)</button>
+      <button class="nav-tab" onclick="showTab('type1', this)">Type 1 Diabetes</button>
+      <button class="nav-tab" onclick="showTab('icu', this)">ICU Management</button>
+      <button class="nav-tab" onclick="showTab('nonicu', this)">Non-ICU Management</button>
+    </div>
+
+    <!-- Type 2 Diabetes OPD Section -->
+    <div id="type2" class="tab-content active">
+      <div class="section">
+        <h3>Type 2 Diabetes - Outpatient Management</h3>
+        
+        <div class="form-group">
+          <h4>2.1 Weight-based Basal Insulin</h4>
+          <label>Weight (kg):</label>
+          <input type="number" id="t2_weight" step="0.1" />
+          <button onclick="calculateT2WeightBased()">Calculate</button>
+          <div id="t2_weight_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>2.2 Holman-Turner Formula</h4>
+          <label>Fasting Plasma Glucose (mg/dL):</label>
+          <input type="number" id="t2_fpg" step="1" />
+          <button onclick="calculateHolmanTurner()">Calculate</button>
+          <div id="t2_ht_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>3. Bolus Dose for Basal-plus</h4>
+          <label>Post-meal Glucose (mg/dL):</label>
+          <input type="number" id="t2_postmeal" step="1" />
+          <button onclick="calculateBolus()">Calculate</button>
+          <div id="t2_bolus_result" class="result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Type 1 Diabetes Section -->
+    <div id="type1" class="tab-content">
+      <div class="section">
+        <h3>Type 1 Diabetes Management</h3>
+        
+        <div class="form-group">
+          <h4>4. Total Daily Dose</h4>
+          <label>Weight (kg):</label>
+          <input type="number" id="t1_weight" step="0.1" />
+          <button onclick="calculateT1TDD()">Calculate TDD</button>
+          <div id="t1_tdd_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>5. Basal Dose</h4>
+          <label>TDD:</label>
+          <input type="number" id="t1_tdd" step="0.1" />
+          <button onclick="calculateT1Basal()">Calculate Basal</button>
+          <div id="t1_basal_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>6.2 Bolus Based on Carb Counting</h4>
+          <label>Carbs to be consumed (g):</label>
+          <input type="number" id="t1_carbs" step="1" />
+          <label>Current TDD:</label>
+          <input type="number" id="t1_current_tdd" step="0.1" />
+          <button onclick="calculateT1Bolus()">Calculate Bolus</button>
+          <div id="t1_bolus_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>6.3 Correctional Insulin</h4>
+          <label>Current Glucose (mg/dL):</label>
+          <input type="number" id="t1_current_glucose" step="1" />
+          <label>Pre-meal Target Glucose (mg/dL):</label>
+          <input type="number" id="t1_target_glucose" step="1" />
+          <label>TDD:</label>
+          <input type="number" id="t1_correction_tdd" step="0.1" />
+          <button onclick="calculateCorrection()">Calculate Correction</button>
+          <div id="t1_correction_result" class="result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ICU Section -->
+    <div id="icu" class="tab-content">
+      <div class="section">
+        <h3>ICU Insulin Management</h3>
+        
+        <div class="form-group">
+          <h4>7. Insulin Infusion Rate</h4>
+          <label>Blood Glucose (mg/dL):</label>
+          <input type="number" id="icu_glucose" step="1" />
+          <button onclick="calculateInfusion()">Calculate Rate</button>
+          <div id="icu_infusion_result" class="result"></div>
+        </div>
+
+        <div class="form-group">
+          <h4>8. Shifting from Infusion to Basal-bolus</h4>
+          <label>Total Insulin in Last 6 Hours (units):</label>
+          <input type="number" id="icu_last6h" step="0.1" />
+          <button onclick="calculateTransition()">Calculate Doses</button>
+          <div id="icu_transition_result" class="result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Non-ICU Section -->
+    <div id="nonicu" class="tab-content">
+      <div class="section">
+        <h3>Non-ICU Insulin Management</h3>
+        
+        <div class="form-group">
+          <h4>9. Lakhani-Kumar Formula</h4>
+          <label>Weight (kg):</label>
+          <input type="number" id="nonicu_weight" step="0.1" />
+          <label>HbA1c (%):</label>
+          <input type="number" id="nonicu_hba1c" step="0.1" />
+          <button onclick="calculateLakhaniKumar()">Calculate Dose</button>
+          <div id="nonicu_result" class="result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabId, clickedTab) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      // Show selected tab
+      document.getElementById(tabId).classList.add('active');
+      clickedTab.classList.add('active');
+    }
+
+    // Type 2 Diabetes Calculations
+    function calculateT2WeightBased() {
+      const weight = parseFloat(document.getElementById('t2_weight').value);
+      if (!weight || weight <= 0) {
+        document.getElementById('t2_weight_result').innerHTML = 'Please enter a valid weight greater than 0';
+        return;
+      }
+      if (weight > 200) {
+        document.getElementById('t2_weight_result').innerHTML = 'Please verify: Weight seems unusually high';
+        return;
+      }
+      const dose = weight * 0.2;
+      document.getElementById('t2_weight_result').innerHTML = 
+        `Based on weight of ${weight}kg:<br>` +
+        `Recommended basal insulin dose = ${Math.round(dose)} units<br>` +
+        `(Calculated as 0.2 units × ${weight}kg)`;
+    }
+
+    function calculateHolmanTurner() {
+      const fpg = parseFloat(document.getElementById('t2_fpg').value);
+      if (!fpg) {
+        document.getElementById('t2_ht_result').innerHTML = 'Please enter FPG';
+        return;
+      }
+      const dose = (fpg - 50) / 10;
+      document.getElementById('t2_ht_result').innerHTML = 
+        `Basal insulin dose = ${Math.round(dose)} units`;
+    }
+
+    function calculateBolus() {
+      const postmeal = parseFloat(document.getElementById('t2_postmeal').value);
+      if (!postmeal) {
+        document.getElementById('t2_bolus_result').innerHTML = 'Please enter post-meal glucose';
+        return;
+      }
+      const dose = postmeal / 36;
+      document.getElementById('t2_bolus_result').innerHTML = 
+        `Bolus insulin dose = ${Math.round(dose)} units`;
+    }
+
+    // Type 1 Diabetes Calculations
+    function calculateT1TDD() {
+      const weight = parseFloat(document.getElementById('t1_weight').value);
+      if (!weight) {
+        document.getElementById('t1_tdd_result').innerHTML = 'Please enter weight';
+        return;
+      }
+      const tdd = 0.52 * weight;
+      document.getElementById('t1_tdd_result').innerHTML = 
+        `Total Daily Dose = ${Math.round(tdd)} units`;
+    }
+
+    function calculateT1Basal() {
+      const tdd = parseFloat(document.getElementById('t1_tdd').value);
+      if (!tdd) {
+        document.getElementById('t1_basal_result').innerHTML = 'Please enter TDD';
+        return;
+      }
+      const basal = 0.47 * tdd;
+      document.getElementById('t1_basal_result').innerHTML = 
+        `Basal dose = ${Math.round(basal)} units`;
+    }
+
+    function calculateT1Bolus() {
+      const carbs = parseFloat(document.getElementById('t1_carbs').value);
+      const tdd = parseFloat(document.getElementById('t1_current_tdd').value);
+      if (!carbs || !tdd) {
+        document.getElementById('t1_bolus_result').innerHTML = 'Please enter all values';
+        return;
+      }
+      if (tdd <= 0) {
+        document.getElementById('t1_bolus_result').innerHTML = 'TDD must be greater than 0';
+        return;
+      }
+      const icr = 500 / tdd;
+      const bolus = carbs / icr;
+      document.getElementById('t1_bolus_result').innerHTML = 
+        `Insulin to Carb Ratio (ICR) = 1:${icr.toFixed(1)}<br>` +
+        `This means 1 unit of insulin covers ${icr.toFixed(1)}g of carbs<br>` +
+        `Recommended bolus dose = ${Math.round(bolus)} units`;
+    }
+
+    function calculateCorrection() {
+      const currentGlucose = parseFloat(document.getElementById('t1_current_glucose').value);
+      const targetGlucose = parseFloat(document.getElementById('t1_target_glucose').value);
+      const tdd = parseFloat(document.getElementById('t1_correction_tdd').value);
+      
+      if (!currentGlucose || !targetGlucose || !tdd) {
+        document.getElementById('t1_correction_result').innerHTML = 'Please enter all values';
+        return;
+      }
+      
+      if (tdd <= 0) {
+        document.getElementById('t1_correction_result').innerHTML = 'TDD must be greater than 0';
+        return;
+      }
+
+      if (currentGlucose < 0 || targetGlucose < 0) {
+        document.getElementById('t1_correction_result').innerHTML = 'Glucose values cannot be negative';
+        return;
+      }
+
+      const isf = 1700 / tdd;
+      const correction = (currentGlucose - targetGlucose) / isf;
+      
+      let message = `Insulin Sensitivity Factor (ISF) = ${isf.toFixed(1)} mg/dL/unit<br>` +
+                    `This means 1 unit of insulin lowers glucose by ${isf.toFixed(1)} mg/dL<br>`;
+      
+      if (correction > 0) {
+        message += `Recommended correction dose = +${Math.round(correction)} units`;
+      } else if (correction < 0) {
+        message += `Warning: Current glucose is below target by ${Math.round(Math.abs(correction))} units`;
+      } else {
+        message += `No correction needed - at target`;
+      }
+      
+      document.getElementById('t1_correction_result').innerHTML = message;
+    }
+
+    // ICU Calculations
+    function calculateInfusion() {
+      const glucose = parseFloat(document.getElementById('icu_glucose').value);
+      if (!glucose) {
+        document.getElementById('icu_infusion_result').innerHTML = 'Please enter blood glucose';
+        return;
+      }
+      const rate = glucose / 100;
+      document.getElementById('icu_infusion_result').innerHTML = 
+        `Infusion rate = ${Math.round(rate)} units/hour`;
+    }
+    
+    function calculateTransition() {
+      const last6h = parseFloat(document.getElementById('icu_last6h').value);
+      if (!last6h) {
+        document.getElementById('icu_transition_result').innerHTML = 'Please enter insulin used';
+        return;
+      }
+      const total = 0.8 * (last6h * 4);
+      const basal = 0.5 * total;
+      const bolusMeal = (0.5 * total) / 3;
+      
+      document.getElementById('icu_transition_result').innerHTML = 
+        `Total daily subcutaneous insulin = ${Math.round(total)} units<br>` +
+        `Basal insulin = ${Math.round(basal)} units<br>` +
+        `Bolus insulin before each meal = ${Math.round(bolusMeal)} units`;
+    }
+    
+    // Non-ICU Calculations
+    function calculateLakhaniKumar() {
+      const weight = parseFloat(document.getElementById('nonicu_weight').value);
+      const hba1c = parseFloat(document.getElementById('nonicu_hba1c').value);
+      
+      if (!weight || !hba1c) {
+        document.getElementById('nonicu_result').innerHTML = 'Please enter all values';
+        return;
+      }
+      
+      const dosePerKg = 0.064 + (0.030 * hba1c);
+      const totalDose = dosePerKg * weight;
+      
+      document.getElementById('nonicu_result').innerHTML = 
+        `Basal insulin dose per kg = ${dosePerKg.toFixed(3)} units/kg<br>` +
+        `Total basal insulin dose = ${Math.round(totalDose)} units`;
+    }
+  </script>
+</body>
+</html>
